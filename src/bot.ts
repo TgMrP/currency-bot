@@ -3,6 +3,7 @@ config();
 import TelegramBot from "node-telegram-bot-api";
 import axios from "axios";
 import { CronJob } from "cron";
+import * as cheerio from "cheerio";
 
 const token: string = process.env.TELEGRAM_BOT_TOKEN || "";
 const chatId: string = process.env.TELEGRAM_CHAT_ID || "";
@@ -11,21 +12,19 @@ const bot = new TelegramBot(token, { polling: true });
 
 let previousRate: number | null = null;
 
-interface ExchangeRateResponse {
-  key: string;
-  currentExchangeRate: number;
-  currentChange: number;
-  unit: number;
-  lastUpdate: string;
-}
-
-// Function to fetch exchange rate
+// Function to fetch exchange rate from Google Finance
 const fetchExchangeRate = async (): Promise<number | null> => {
   try {
-    const response = await axios.get<ExchangeRateResponse>(
-      "https://boi.org.il/PublicApi/GetExchangeRate?key=eur"
+    const response = await axios.get(
+      "https://www.google.com/finance/quote/EUR-ILS"
     );
-    const rate = response.data.currentExchangeRate;
+    const html = response.data;
+    const $ = cheerio.load(html);
+    const rateString = $('div[data-source="EUR"] div[jsname="ip75Cb"] div')
+      .first()
+      .text();
+
+    const rate = parseFloat(rateString.replace(",", ""));
     return rate;
   } catch (error) {
     console.error("Error fetching exchange rate:", error);
