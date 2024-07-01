@@ -32,9 +32,24 @@ const fetchExchangeRate = async (): Promise<number | null> => {
   }
 };
 
+const FetchLeumi = async () => {
+  try {
+    const response = await axios.get(
+      "https://www.bankleumi.co.il/Api/ATM/Rates"
+    );
+    const html = response.data;
+
+    return html.ATMData?.Euro;
+  } catch (error) {
+    console.error("Error fetching exchange rate:", error);
+    return null;
+  }
+};
+
 // Function to check and notify about exchange rate changes
 const checkExchangeRate = async () => {
-  const currentRate = await fetchExchangeRate();
+  // const currentRate = await fetchExchangeRate();
+  const currentRate = await FetchLeumi();
   console.log(`Start checking exchange rate at ${new Date()}`);
   if (currentRate && currentRate !== previousRate) {
     console.log(`Euro to NIS rate has changed: ${currentRate}`);
@@ -43,19 +58,11 @@ const checkExchangeRate = async () => {
   }
 };
 
-// Schedule the rate check to run every 10 minutes
+FetchLeumi();
+
+// // Schedule the rate check to run every 10 minutes
 const job = new CronJob("* * * * *", checkExchangeRate);
 checkExchangeRate();
 job.start();
-
-// Handle /get command to fetch and return the current exchange rate
-bot.onText(/\/get/, async (msg) => {
-  const rate = await fetchExchangeRate();
-  if (rate !== null) {
-    bot.sendMessage(msg.chat.id, `Current Euro to NIS exchange rate: ${rate}`);
-  } else {
-    bot.sendMessage(msg.chat.id, "Failed to fetch the exchange rate.");
-  }
-});
 
 console.log("Bot is running...");
