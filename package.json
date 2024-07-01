@@ -4,7 +4,8 @@
   "description": "A Telegram bot to notify about Euro to NIS exchange rate changes",
   "main": "dist/bot.js",
   "scripts": {
-    "start": "ts-node src/bot.ts",
+    "start": "node dist/bot.js",
+    "dev": "ts-node src/bot.ts",
     "build": "tsc"
   },
   "keywords": [],
