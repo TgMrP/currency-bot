@@ -44,9 +44,19 @@ const checkExchangeRate = async () => {
   }
 };
 
-// Schedule the rate check to run every minute
-const job = new CronJob("* * * * *", checkExchangeRate);
+// Schedule the rate check to run every 10 minutes
+const job = new CronJob("*/10 * * * *", checkExchangeRate);
 checkExchangeRate();
 job.start();
+
+// Handle /get command to fetch and return the current exchange rate
+bot.onText(/\/get/, async (msg) => {
+  const rate = await fetchExchangeRate();
+  if (rate !== null) {
+    bot.sendMessage(msg.chat.id, `Current Euro to NIS exchange rate: ${rate}`);
+  } else {
+    bot.sendMessage(msg.chat.id, "Failed to fetch the exchange rate.");
+  }
+});
 
 console.log("Bot is running...");
