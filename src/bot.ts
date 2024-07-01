@@ -48,17 +48,24 @@ const FetchLeumi = async () => {
 
 // Function to check and notify about exchange rate changes
 const checkExchangeRate = async () => {
-  // const currentRate = await fetchExchangeRate();
   const currentRate = await FetchLeumi();
   console.log(`Start checking exchange rate at ${new Date()}`);
-  if (currentRate && currentRate !== previousRate) {
-    console.log(`Euro to NIS rate has changed: ${currentRate}`);
-    bot.sendMessage(chatId, `Euro to NIS rate has changed: ${currentRate}`);
+
+  if (currentRate !== null && currentRate !== previousRate) {
+    let message = `Euro to NIS rate has changed: ${currentRate}`;
+    if (previousRate !== null) {
+      if (currentRate > previousRate) {
+        message += " 📈🟢"; // Green arrow up
+      } else {
+        message += " 📉🔴"; // Red arrow down
+      }
+    }
+
+    console.log(message);
+    bot.sendMessage(chatId, message);
     previousRate = currentRate;
   }
 };
-
-FetchLeumi();
 
 // // Schedule the rate check to run every 10 minutes
 const job = new CronJob("* * * * *", checkExchangeRate);
