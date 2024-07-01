@@ -44,7 +44,7 @@ const checkExchangeRate = async () => {
 };
 
 // Schedule the rate check to run every 10 minutes
-const job = new CronJob("*/10 * * * *", checkExchangeRate);
+const job = new CronJob("* * * * *", checkExchangeRate);
 checkExchangeRate();
 job.start();
 
