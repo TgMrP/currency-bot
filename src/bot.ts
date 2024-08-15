@@ -11,6 +11,7 @@ const chatId: string = process.env.TELEGRAM_CHAT_ID || "";
 const bot = new TelegramBot(token, { polling: true });
 
 let previousRate: number | null = null;
+let previousRateDollar: number | null = null;
 
 // Function to fetch exchange rate from Google Finance
 const fetchExchangeRate = async (): Promise<number | null> => {
@@ -39,7 +40,10 @@ const FetchLeumi = async () => {
     );
     const html = response.data;
 
-    return html.ATMData?.Euro;
+    return {
+      euro: html.ATMData?.Euro,
+      dollar: html.ATMData?.Dollar,
+    };
   } catch (error) {
     console.error("Error fetching exchange rate:", error);
     return null;
@@ -51,10 +55,10 @@ const checkExchangeRate = async () => {
   const currentRate = await FetchLeumi();
   console.log(`Start checking exchange rate at ${new Date()}`);
 
-  if (currentRate !== null && currentRate !== previousRate) {
-    let message = `Euro to NIS rate has changed: ${currentRate}`;
+  if (currentRate?.euro && currentRate.euro !== previousRate) {
+    let message = `Euro to NIS rate has changed: ${currentRate.euro}`;
     if (previousRate !== null) {
-      if (currentRate > previousRate) {
+      if (currentRate.euro > previousRate) {
         message += " 📈🟢"; // Green arrow up
       } else {
         message += " 📉🔴"; // Red arrow down
@@ -63,7 +67,22 @@ const checkExchangeRate = async () => {
 
     console.log(message);
     bot.sendMessage(chatId, message);
-    previousRate = currentRate;
+    previousRate = currentRate.euro;
+  }
+
+  if (currentRate?.dollar && currentRate.dollar !== previousRateDollar) {
+    let message = `Dollar to NIS rate has changed: ${currentRate.dollar}`;
+    if (previousRateDollar !== null) {
+      if (currentRate.dollar > previousRateDollar) {
+        message += " 📈🟢"; // Green arrow up
+      } else {
+        message += " 📉🔴"; // Red arrow down
+      }
+    }
+
+    console.log(message);
+    bot.sendMessage(chatId, message);
+    previousRateDollar = currentRate.dollar;
   }
 };
 
